@@ -157,4 +157,19 @@ describe('mdListItem directive', function() {
     expect(listItem.hasClass('md-no-proxy')).toBeTruthy();
   });
 
+  it('should copy md-icon.md-secondary attributes to the button', function() {
+    var listItem = setup(
+      '<md-list-item>' +
+      '  <div>Content Here</div>' +
+      '  <md-checkbox></md-checkbox>' +
+      '  <md-icon class="md-secondary" ng-click="sayHello()" ng-disabled="true">Hello</md-icon>' +
+      '</md-list-item>'
+    );
+
+    var button = listItem.find('md-button');
+
+    expect(button[0].hasAttribute('ng-click')).toBeTruthy();
+    expect(button[0].hasAttribute('ng-disabled')).toBeTruthy();
+  });
+
 });
