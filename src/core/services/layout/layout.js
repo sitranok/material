@@ -8,13 +8,8 @@
 
   var FLEX_OPTIONS = ['grow', 'initial', 'auto', 'none'];
   var LAYOUT_OPTIONS = ['row', 'column'];
-  var ALIGNMENT_OPTIONS = [
-        "start start", "start center", "start end",
-        "center", "center center", "center start", "center end",
-        "end", "end center", "end start", "end end",
-        "space-around", "space-around center", "space-around start", "space-around end",
-        "space-between", "space-between center", "space-between start", "space-between end"
-      ];
+  var ALIGNMENT_MAIN_AXIS= [ "", "start", "center", "end", "stretch", "space-around", "space-between" ];
+  var ALIGNMENT_CROSS_AXIS= [ "", "start", "center", "end", "stretch" ];
 
 
   var config = {
@@ -22,12 +17,6 @@
      * Enable directive attribute-to-class conversions
      */
     enabled: true,
-
-    /**
-     * After translation to classname equivalents, remove the
-     * original Layout attribute
-     */
-    removeAttributes : true,
 
     /**
      * List of mediaQuery breakpoints and associated suffixes
@@ -263,11 +252,6 @@
 
       updateFn(getNormalizedAttrValue(className, attrs, ""));
       scope.$on("$destroy", function() { unwatch() });
-
-
-      if (config.removeAttributes && (element[0].nodeName != "#comment")) {
-        element.removeAttr(className);
-      }
     }
   }
 
@@ -309,11 +293,6 @@
      */
     function translateToCssClass(scope, element) {
       element.addClass(className);
-
-      if (config.removeAttributes) {
-        // After link-phase, remove deprecated layout attribute selector
-        element.removeAttr(className);
-      }
     }
   }
 
@@ -389,9 +368,8 @@
           break;
 
         case 'layout-align'  :
-          if (!findIn(value, ALIGNMENT_OPTIONS, "-")) {
-            value = ALIGNMENT_OPTIONS[0];   // 'start-start';
-          }
+          var axis = extractAlignAxis(value);
+          value = $mdUtil.supplant("{main}-{cross}",axis);
           break;
 
         case 'layout-padding' :
@@ -447,6 +425,26 @@
       });
     }
     return found;
+  }
+
+  function extractAlignAxis(value) {
+    var axis = {
+      main : "start",
+      cross: "stretch"
+    };
+
+    var values = (value || "").replace(WHITESPACE, "-").split("-");
+    if ( values.length == 3 ) {
+      values = [ values[0]+"-"+values[1],values[2] ];
+    }
+
+    if ( values.length > 0 ) axis.main  = values[0] || axis.main;
+    if ( values.length > 1 ) axis.cross = values[1] || axis.cross;
+
+    if ( ALIGNMENT_MAIN_AXIS.indexOf(axis.main) < 0 )   axis.main = "start";
+    if ( ALIGNMENT_CROSS_AXIS.indexOf(axis.cross) < 0 ) axis.cross = "stretch";
+
+    return axis;
   }
 
 })();
